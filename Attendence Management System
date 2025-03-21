@@ -1,0 +1,111 @@
+import java.awt.*; // GUI ke liye
+import java.util.ArrayList; // Layout ke liye
+import javax.swing.*; // Button events ke liye
+
+// Student Class
+class Student {
+    int id;
+    String name;
+    public boolean isPresent;
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+        this.isPresent = false; // Default: Absent
+    }
+
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public boolean isPresent() { return isPresent; }
+
+    public void markAttendance(boolean present) {
+        isPresent = present;
+    }
+
+    @Override
+    public String toString() {
+        return id + " - " + name + " (" + (isPresent ? "Present" : "Absent") + ")";
+    }
+}
+
+// GUI Class
+public class AttendanceGUI extends JFrame {
+    private ArrayList<Student> students; // Student List
+    private DefaultListModel<String> listModel; // JList update karne ke liye
+    private JList<String> studentList; // Student List display karega
+    private JTextField idField, nameField; // User input ke liye text field
+
+    public AttendanceGUI() {
+        students = new ArrayList<>();
+        listModel = new DefaultListModel<>();
+        studentList = new JList<>(listModel); // FIX: JList me listModel set karna zaroori hai
+
+        setTitle("Student Attendance System");
+        setSize(400, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new FlowLayout());
+
+        JLabel idLabel = new JLabel("Student ID:");
+        idField = new JTextField(10);
+        JLabel nameLabel = new JLabel("Name:");
+        nameField = new JTextField(10);
+
+        JButton addButton = new JButton("Add Student");
+        JButton presentButton = new JButton("Mark Present");
+        JButton absentButton = new JButton("Mark Absent");
+
+        addButton.addActionListener(e -> addStudent());
+        presentButton.addActionListener(e -> markAttendance(true));
+        absentButton.addActionListener(e -> markAttendance(false));
+
+        add(idLabel);
+        add(idField);
+        add(nameLabel);
+        add(nameField);
+        add(addButton);
+        add(presentButton);
+        add(absentButton);
+        add(new JScrollPane(studentList));
+
+        setVisible(true);
+    }
+
+    // ✅ Student Add Karne Ka Function
+    private void addStudent() {
+        try {
+            int id = Integer.parseInt(idField.getText());
+            String name = nameField.getText().trim();
+
+            if (name.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Name cannot be empty!");
+                return;
+            }
+
+            Student student = new Student(id, name);
+            students.add(student);
+            listModel.addElement(student.toString());
+
+            idField.setText("");
+            nameField.setText("");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid Student ID!");
+        }
+    }
+
+    // ✅ Attendance Mark Karne Ka Function
+    private void markAttendance(boolean isPresent) {
+        int index = studentList.getSelectedIndex();
+        if (index != -1) {
+            students.get(index).markAttendance(isPresent);
+            listModel.set(index, students.get(index).toString());
+            studentList.repaint(); // FIX: GUI ko update karne ke liye
+        } else {
+            JOptionPane.showMessageDialog(this, "Select a student to mark attendance!");
+        }
+    }
+
+    // ✅ Main Function
+    public static void main(String[] args) {
+        new AttendanceGUI();
+    }
+}
